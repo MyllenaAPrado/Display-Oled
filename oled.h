@@ -6,11 +6,16 @@
 
 #define DISPLAY_ADDRESS 0x3C
 #define OLED_MODE_WRITE_COMMAND 0x00
+#define ZERO_HEX 0x00
 #define OLED_MODE_WRITE_DATA 0x40
 #define OLED_DISPLAY_ON 0xAF
 #define OLED_DISPLAY_OFF 0xAE
 #define ACTIVE_SCROLL 0x2F
 #define DEACTIVE_SCROLL 0x2E
+#define SCROLL_HOR_LEFT 0x27
+#define SCROLL_HOR_RIGHT 0x26
+#define SCROLL_VERT_LEFT 0x2A
+#define SCROLL_VERT_RIGHT 0x29
 
 class display_Oled{
   
@@ -114,22 +119,21 @@ class display_Oled{
         {0x00, 0x41, 0x36, 0x08, 0x00, 0x00},
         {0x00, 0x02, 0x01, 0x01, 0x02, 0x01},
         {0x00, 0x02, 0x05, 0x05, 0x02, 0x00}};
-
-  
-    
-    
-    
-  public:
+   
     void write_command(uint8_t command);
     void write_data(uint8_t data); 
+    void scroll_setup();
+    
+  public:
+    
     void init();
     void set_cursor(String position_cursor);
-    void write_caracter(String phrase);
+    void write_phrase(String phrase, String cursor_position);
     void clear_display();
-    void scroll_mode(String mode);
-    void active_scroll();
+    void active_scroll(String mode);
     void deactive_scroll();
     void blink_display(int time_of_blink);
+    void scroll();
   
 };
 #endif

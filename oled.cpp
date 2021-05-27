@@ -26,11 +26,12 @@ void display_Oled::set_cursor(String position_cursor){
    *  begin - begin od display
    *  middle - middle of display
    *  end - end of display
+   *  clear - set cursor to clear the display
   */
-  const uint8_t cursor_middle[6] = {0x21, 0x24, 0x7F, 0x22, 0x0A, 0x3F};
-  const uint8_t cursor_begin[6] = {0x21, 0x00, 0x7F, 0x22, 0x00, 0x3F};
-  const uint8_t cursor_end[6] = {0x21, 0x7F, 0x7F, 0x22, 0x3F, 0x3F};
-
+  const uint8_t cursor_begin[6] = {0x21, 0x30, 0x7F, 0x22, 0x00, 0x01};
+  const uint8_t cursor_middle[6] = {0x21, 0x30, 0x7F, 0x22, 0x02, 0x04};
+  const uint8_t cursor_end[6] = {0x21, 0x30, 0x7F, 0x22, 0x05, 0x07};
+  const uint8_t cursor_clear[6] = {0x21, 0x00, 0x7F, 0x22, 0x00, 0x07};
   
   if(position_cursor == "middle"){
     for(int i=0; i < 6; i++){
@@ -47,9 +48,37 @@ void display_Oled::set_cursor(String position_cursor){
       write_command(cursor_end[i]);
     }
   }
+  if(position_cursor == "clear"){
+    for(int i=0; i < 6; i++){
+      write_command(cursor_clear[i]);
+    }
+  }
 }
 
-void display_Oled::write_caracter(String phrase){
+void display_Oled::clear_display(){
+  set_cursor("clear");
+  for(int i=0; i < (192); i++){
+    for(int i=0; i < 6; i++){
+      write_data(caracters[0][i]);
+    }    
+  }
+  set_cursor("clear");
+  for(int i=0; i < (192); i++){
+    for(int i=0; i < 6; i++){
+      write_data(caracters[10][i]);
+    }    
+  }
+  set_cursor("clear");
+  for(int i=0; i < (192); i++){
+    for(int i=0; i < 6; i++){
+      write_data(caracters[0][i]);
+    }    
+  }
+}
+
+void display_Oled::write_phrase(String phrase, String cursor_position){
+  
+  set_cursor(cursor_position);
   
   //pass string to array of char
   int str_len = phrase.length() + 1;
@@ -68,56 +97,54 @@ void display_Oled::write_caracter(String phrase){
 void display_Oled::init(){
   Wire.begin();
   write_command(OLED_DISPLAY_ON); //turn on display
-  set_cursor("middle");
+  write_command(ZERO_HEX);
+  //scroll_setup();
+  write_command(DEACTIVE_SCROLL);
 }
 
-//ainda implementar
-void display_Oled::clear_display(){
-  set_cursor("begin");
+void display_Oled::scroll_setup(){
+  const uint8_t scroll_hor_left[5] = {SCROLL_HOR_LEFT, 0xB0, 0xC7, 0xD5, 0x2F};//example of scroll
+  const uint8_t scroll_hor_right[5] = {SCROLL_HOR_RIGHT, 0xB0, 0xC7, 0xD5, 0x2F};//example of scroll
+  const uint8_t scroll_vert_left[5] = {SCROLL_VERT_LEFT, 0xB0, 0xC7, 0xD5, 0x2F};//example of scroll
+  const uint8_t scroll_vert_right[5] = {SCROLL_VERT_RIGHT, 0xB0, 0xC7, 0xD5, 0x2F};//example of scroll
+  for(int i=0; i < 5; i++){
+    write_command(scroll_hor_left[i]);
+  }
+  
+  for(int i=0; i < 5; i++){
+    write_command(scroll_hor_right[i]);
+  }
+  
+  for(int i=0; i < 5; i++){
+    write_command(scroll_vert_left[i]);
+  }
+  
+  for(int i=0; i < 5; i++){
+    write_command(scroll_vert_right[i]);
+  }
+  
 }
 
-void display_Oled::scroll_mode(String mode){
-  /*
-   * Set the parameters of scroll
-   * HU - horizontal to up side
-   * HD - horizontal to down side
-   * VL - vertical to left
-   * VR - vertical to right
-  */
-  const uint8_t scroll_hor_up[5] = {0x2A, 0xB0, 0xC1, 0xD5, 0x2F};//example of scroll
-  const uint8_t scroll_hor_down[5] = {0x2A, 0xB0, 0xC1, 0xD5, 0x2F};//example of scroll
-  const uint8_t scroll_vert_left[5] = {0x2A, 0xB0, 0xC1, 0xD5, 0x2F};//example of scroll
-  const uint8_t scroll_vert_right[5] = {0x2A, 0xB0, 0xC1, 0xD5, 0x2F};//example of scroll
-
-  if(mode == "HU"){
-    for(int i=0; i < 5; i++){
-      write_command(scroll_hor_up[i]);
-    }
+void display_Oled::active_scroll(String mode){
+  if(mode =="HR"){
+    write_command(SCROLL_HOR_RIGHT);
   }
-  if(mode == "HD"){
-    for(int i=0; i < 5; i++){
-      write_command(scroll_hor_down[i]);
-    }
+  if(mode =="HL"){
+    write_command(SCROLL_HOR_LEFT);
   }
-  if(mode == "VL"){
-    for(int i=0; i < 5; i++){
-      write_command(scroll_vert_left[i]);
-    }
+  if(mode =="VR"){
+    write_command(SCROLL_VERT_RIGHT);
   }
-
-  if(mode == "VR"){
-    for(int i=0; i < 5; i++){
-      write_command(scroll_vert_right[i]);
-    }
+  if(mode =="VL"){
+    write_command(SCROLL_VERT_LEFT);
   }
-}
-
-
-void display_Oled::active_scroll(){
+  write_command(ZERO_HEX);
   write_command(ACTIVE_SCROLL);
+  
 }
 
 void display_Oled::deactive_scroll(){
+  write_command(ZERO_HEX);
   write_command(DEACTIVE_SCROLL);
 }
 
@@ -125,7 +152,7 @@ void display_Oled::blink_display(int time_of_blink){
 
   for(int i =0; i< time_of_blink; i++){
     write_command(OLED_DISPLAY_OFF);
-    delay(500);
+    delay(300);
     write_command(OLED_DISPLAY_ON);
     delay(500);
   }
